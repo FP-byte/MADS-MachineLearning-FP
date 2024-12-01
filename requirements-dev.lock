@@ -262,7 +262,7 @@ mlflow==2.18.0
     # via mltrainer
 mlflow-skinny==2.18.0
     # via mlflow
-mltrainer==0.1.128
+mltrainer==0.1.129
 more-itertools==10.5.0
     # via configspace
     # via jaraco-classes
