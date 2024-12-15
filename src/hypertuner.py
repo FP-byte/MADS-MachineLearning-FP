@@ -88,8 +88,19 @@ class Hypertuner:
 
     def _initialize_model(self, config):
         """Initialize and return the model based on the configuration."""
-        from models import LSTMmodel
-        return LSTMmodel(config)
+        model_type = config.get("model_type", "LSTM")
+
+        if model_type == "LSTM":
+            from models import LSTMmodel
+            return LSTMmodel(config)
+        elif model_type == "GRU":
+            from models import GRUmodel
+            return GRUmodel(config)
+        elif model_type == "CNN":
+            from models import CNNmodel
+            return CNNmodel(config)
+        else:
+            raise ValueError(f"Unsupported model type: {model_type}")
 
 
 if __name__ == "__main__":
@@ -118,6 +129,7 @@ if __name__ == "__main__":
         "hidden_size": tune.randint(16, 128),
         "dropout": tune.uniform(0.0, 0.3),
         "num_layers": tune.randint(2, 5),
+        "model_type": "LSTM"  # Specify the model type here (LSTM, GRU, or CNN)
     }
 
     hypertuner = Hypertuner(settings_hypertuner, config)
