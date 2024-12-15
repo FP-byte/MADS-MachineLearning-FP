@@ -508,6 +508,7 @@ torch==2.5.1+cu118
 torch-tb-profiler==0.4.3
     # via mltrainer
 torchaudio==2.5.1+cu118
+torchinfo==1.8.0
 torchsummary==1.5.1
 torchtext==0.18.0
     # via mltrainer
