@@ -42,25 +42,35 @@ class Hypertuner:
 
     def train(self, config):
         """
-        Train function to be passed to Ray Tune. This receives a hyperparameter configuration
-        and trains a model accordingly.
+        Train function to be passed to Ray Tune. Dynamically handles datasets and models.
 
         Args:
             config (Dict): Hyperparameter configuration provided by Ray Tune.
         """
+        # Dynamically choose the dataset type
+        dataset_type = config.get("dataset_type", "GESTURES")
+        if dataset_type == "GESTURES":
+                config["input_size"] = 3 # Specify dataset input 
+                config["output_size"]= 20 # Specify dataset output
+                
         data_dir = config["data_dir"]
-        gesturesdatasetfactory = DatasetFactoryProvider.create_factory(DatasetType.GESTURES)
-        preprocessor = PaddedPreprocessor()
+        
+        dataset_factory = DatasetFactoryProvider.create_factory(DatasetType[dataset_type])
+        preprocessor_class = config.get("preprocessor", PaddedPreprocessor)
+        preprocessor = preprocessor_class()
 
         with FileLock(data_dir / ".lock"):
-            streamers = gesturesdatasetfactory.create_datastreamer(
-                batchsize=32, preprocessor=preprocessor
+            streamers = dataset_factory.create_datastreamer(
+                batchsize=config.get("batch_size", 32),
+                preprocessor=preprocessor,
             )
             train = streamers["train"]
             valid = streamers["valid"]
 
+        # Initialize the model
         model = self._initialize_model(config)
 
+        # Trainer settings
         trainersettings = TrainerSettings(
             epochs=self.MAX_EPOCHS,
             metrics=[self.accuracy],
@@ -72,6 +82,7 @@ class Hypertuner:
             earlystop_kwargs=None,
         )
 
+        # Set up the trainer
         trainer = Trainer(
             model=model,
             settings=trainersettings,
@@ -97,13 +108,14 @@ class Hypertuner:
             from models import GRUmodel
             return GRUmodel(config)
         elif model_type == "CNN":
-            from models import CNNmodel
-            return CNNmodel(config)
+            from models import Gesture1DCNN
+            return Gesture1DCNN(config)
         else:
             raise ValueError(f"Unsupported model type: {model_type}")
 
 
 if __name__ == "__main__":
+    #test with LSTM
     ray.init()
 
     data_dir = Path("data/raw/gestures/gestures-dataset").resolve()
@@ -122,14 +134,16 @@ if __name__ == "__main__":
     }
 
     config = {
-        "input_size": 3,
-        "output_size": 20,
+        "dataset_type": "GESTURES",  # Can be GESTURES, ANOTHER_DATASET, etc.
+        "preprocessor": PaddedPreprocessor,
         "tune_dir": tune_dir,
         "data_dir": data_dir,
+        "batch_size": 32,  # Batch size specific to the dataset
         "hidden_size": tune.randint(16, 128),
-        "dropout": tune.uniform(0.0, 0.3),
+        #"dropout": tune.uniform(0.0, 0.3),
+        "dropout":0.0,
         "num_layers": tune.randint(2, 5),
-        "model_type": "LSTM"  # Specify the model type here (LSTM, GRU, or CNN)
+        "model_type": "LSTM",  # Specify the model type
     }
 
     hypertuner = Hypertuner(settings_hypertuner, config)

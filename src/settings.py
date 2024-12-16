@@ -18,8 +18,8 @@ settings_hypertuner = baseHypertuner(
         SAMPLE_INT = tune.search.sample.Integer,
         SAMPLE_FLOAT = tune.search.sample.Float,
         NUM_SAMPLES = 10,
-        MAX_EPOCHS = 50,
+        MAX_EPOCHS = 27,
         device = "cpu",
         accuracy = metrics.Accuracy(),
-        reporttypes = [ReportTypes.RAY],
+        reporttypes = [ReportTypes.GIN, ReportTypes.TENSORBOARD, ReportTypes.MLFLOW],
         )
