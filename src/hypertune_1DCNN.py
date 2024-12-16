@@ -21,7 +21,7 @@ def hypertune_CNN():
 
     settings_hypertuner = {
             "NUM_SAMPLES": 10,
-            "MAX_EPOCHS": 50,
+            "MAX_EPOCHS": 10,
             "device": "cpu",
             "accuracy": metrics.Accuracy(),
             "reporttypes": [ReportTypes.RAY],
@@ -33,14 +33,19 @@ def hypertune_CNN():
             "output_size": 20,
             "tune_dir": tune_dir,
             "data_dir": data_dir,
+            "dropout1": tune.uniform(0.01, 0.2),
+            #"dropout1": 0.0,
+            "dropout2": 0.0,
+            "dropout3": 0.0,
+            #"dropout_pos": tune.choice([0, 1, 2]),
             #"dropout": tune.uniform(0.0, 0.2),
-            "dropout": 0.0,
-            #"num_layers": tune.randint(2, 5),
-            "num_layers": 4,            
-            "filters" : tune.randint(50, 100),
-            #"filters" : 50,
-            "units1" : tune.randint(50, 200),
-            "units2" : tune.randint(200, 500),
+            #"num_layers": tune.randint(0, 8),        
+            #"filters" : tune.randint(50, 400),
+            "filters" : 100,
+            "units1" : tune.randint(100, 300),
+            "units2" : tune.randint(100, 400),
+            #"units1": 300,
+            #"units2": 100,
             "model_type": "CNN"  # Specify the model type here (LSTM, GRU, or CNN)
     }
 

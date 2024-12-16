@@ -23,7 +23,7 @@ def hypertune_LSTM():
 
     settings_hypertuner = {
         "NUM_SAMPLES": 10,
-        "MAX_EPOCHS": 50,
+        "MAX_EPOCHS": 10,
         "device": "cpu",
         "accuracy": metrics.Accuracy(),
         "reporttypes": [ReportTypes.RAY],
@@ -35,11 +35,11 @@ def hypertune_LSTM():
         "tune_dir": tune_dir,
         "data_dir": data_dir,
         "batch_size": 32,  # Batch size specific to the dataset
-        "hidden_size": tune.randint(90, 300),
+        "hidden_size": tune.randint(50, 400),
         #"dropout": tune.uniform(0.0, 0.3),
         "dropout":0.0,
-        #"num_layers": tune.randint(2, 6),
-        "num_layers":3,
+        "num_layers": tune.randint(1, 5),
+        #"num_layers":3,
         "model_type": "LSTM",  # Specify the model type
     }
 

@@ -128,6 +128,8 @@ graphql-core==3.2.5
     # via graphql-relay
 graphql-relay==3.2.0
     # via graphene
+graphviz==0.20.3
+    # via torchviz
 greenlet==3.1.1
     # via sqlalchemy
 grpcio==1.68.0
@@ -506,6 +508,7 @@ torch==2.5.1+cu118
     # via torchaudio
     # via torchtext
     # via torchvision
+    # via torchviz
 torch-tb-profiler==0.4.3
     # via mltrainer
 torchaudio==2.5.1+cu118
@@ -515,6 +518,7 @@ torchtext==0.18.0
     # via mltrainer
 torchvision==0.20.1+cu118
     # via mltrainer
+torchviz==0.0.3
 tornado==6.4.1
     # via ipykernel
     # via jupyter-client

@@ -8,22 +8,36 @@
 
 Dataset: Gestures
 
-Model: CNN
+**Experiment 1: Compare LSTM hidden size vs number of layers on the gesture dataset**
+Model: LSTM
+Architecture: Input Layer, LSTM layer (with parameters dropout, hidden size, num_layers), 1 fully connected layer
+Reflection: After 50 runs the model would overfit, so I decreased the runs to 25, 15 and later 10.
+The experiment shows a relationship between low hidden size and low number of layers. Test with less then 4 layers and 200 hidden units perform better. This is probably due to the lack of complex relations in the dataset. The model does not need a large memory or a deep structure to perform on this dataset.
+![LSTM experiment ](img/LSTM_experiment1.png)
 
-Experiment: I want to compare two different model, CNN and LSTM on the gesture dataset. Would one of the two be better?
-First I run random to experiments with 50 runs to de termine the ranges of optimal hyperparameters. On the base of the results I set the best parameters as a fixed value and trained only the units values for the dense layer. 
+**Results Experiment 2 - CNN dropout positions vs units on the gesture dataset**
+CNN model architecture: 
+- 3 convolutional layers each with 1dCon with input (batch_size, 30, 3), filters are multiplied x2 for each layer, kernel_size=2, stride=2, activation: ReLU, MaxPooling layer and Dropout (1) layer, 
+- AdaptiveMaxPool1d layer (for dimensionality reduction), Flatten layer (dimension riduction), Dropout (2) layer
+- Dense layer:  two fully conected layers (units1 and unit2) with in between a Dropout (3) layer
+Experiment 1: I set different dropouts positions in my model: 1. after convolution, 2. befoor Max pooling and 3. In dense layer.
+I ran 6 HyperOptSearch experiments with 10 iteration, in the visualization are the best results with 10 epochs.
+Reflexion: Dropout in position 1 was most effective even with small amount of units and helped to reach the best accuracy.
+Dropout in other positions requires more units and more time to run. Since the learning of feaures happens in the convolutional layers, this is also the most obvious place were to place dropout to improve learnig of new features by all neurons.
+![CNN experiment with units vs dropout](img/CNN_experiment_size_based.jpg)
 
-| **Top 5 results Experiment A - best config CNN vs LSTM**                                    |
-| | accuracy  | iterations | filters  | dropout | num_layers | units1 | units2 | model_type|
-|---:|:------ |:-----------|:---------|:--------|:-----------|:-------|:-------|:----------|
-|  A | 0.996875<br>0.9953125<br>0.9953125<br>0.99375<br>0.99375 | 49<br>49<br>49<br>49<br>49 | 50<br>51<br>88<br>25<br>50 | <br><br>not implemented<br><br> | 4<br>4<br>4<br>3<br>4 | 105<br>191<br>109<br>68<br>379 | 375<br>304<br>357<br>285<br>959 | CNN<br>CNN<br>CNN<br>CNN<br>CNN |
-|  B | 0.9953125<br>0.99375<br>0.9921875<br>0.990625<br>0.9890625 | 49<br>49<br>49<br>49<br>49 | 402<br>256<br>96<br>234<br>119 | 0.0<br>0.0<br>0.0<br>0.0<br>0.0 | 3<br>3<br>3<br>3<br>3 | LSTM<br>LSTM<br>LSTM<br>LSTM<br>LSTM |
 
-Experiment B: Then I reached an optimal configuration with a top accuracy for both models and wanted to test if adding a dropout would make any difference and where would work the best.
 
-| Layer Type              | Placement                       | Typical Dropout Rate |
-|-------------------------|---------------------------------|----------------------|
-| Fully Connected Layers  | Between layers                  | 0.2–0.5              |
-| Convolutional Layers    | After convolutions (optional)   | 0.2–0.3              |
-| Layer Blocks            | Between blocks of layers        | 0.3–0.4              |
-| Global Average Pooling  | After pooling                   | 0.3–0.4              |
+
+
+
+
+
+**Architecture LSTM**
+
+| Layer Type            | Output Shape                    | Parameters                           | Description                                      |
+|-----------------------|----------------------------------|---------------------------------------|--------------------------------------------------|
+| Input Layer           | (batch_size, seq_len, input_size)| 0                                    | Input time-series with sequence length `seq_len` and feature size `input_size` |
+| LSTM                  | (batch_size, seq_len, hidden_size) | `(input_size × hidden_size + hidden_size² + hidden_size) × num_layers` | LSTM with `num_layers`, `hidden_size` units, and `dropout` |
+| Last Time Step Output | (batch_size, hidden_size)         | 0                                    | Extracts the output at the last time step       |
+| Dense (Linear)        | (batch_size, output_size)         | `hidden_size × output_size + output_size`        | Fully connected layer for final output          |

@@ -40,6 +40,8 @@ dependencies = [
     "mltrainer>=0.1.129",
     "torchinfo>=1.8.0",
     "tabulate>=0.9.0",
+    "graphviz>=0.20.3",
+    "torchviz>=0.0.3",
 ]
 
 [project.optional-dependencies]
