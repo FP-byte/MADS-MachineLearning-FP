@@ -35,10 +35,10 @@ def hypertune_LSTM():
         "tune_dir": tune_dir,
         "data_dir": data_dir,
         "batch_size": 32,  # Batch size specific to the dataset
-        "hidden_size": tune.randint(50, 400),
+        "hidden_size": tune.randint(400, 800),
         #"dropout": tune.uniform(0.0, 0.3),
         "dropout":0.0,
-        "num_layers": tune.randint(1, 5),
+        "num_layers": tune.randint(1, 4),
         #"num_layers":3,
         "model_type": "LSTM",  # Specify the model type
     }
