@@ -112,17 +112,83 @@ Binary Cross Entropy loss: output is een waarde tussen 0 en 1 (wel of niet de ca
 **adam**: normalize the gradients so we move a fixed distance governed by the learning rate in each direction. This to avoid that big gradients gets big changes en small gradients get small changes (because of the calculation without normalization).
 **L2 regularization**: applied to weights but not biases, weight decay term. The effect is to encourage smaller weights so the output function is smoother and less overfitted. Small weight mean a small variance and therefore the error reduces because the network do not overfit the data. When the netwok is overparametirized the regularization term will favour functions that interpolate smoothly between nerby points.
 2.2 - Dimensionality probleem is bij afbeeldingen van Dense Neural Networks: fully connected networks hebben het nadeel dat ze niet goed werken voor grote inputs zoals beelden waarin de neuronen samen specifieke waarnemingen moeten nemen, er is geen nut dat elke neuroon meedoet met elke onderdeel. Eerder is dat handiger om een beeld in parallel te analiseren en steeds in grotere gebieden te integreren. (p. 51). Verder shallow dense networks zijn trager in het trainen en kunnen minder goed generaliseren.
-2.3 - Hoe Convolutions dat dimensionality probleem oplossen  
-2.4 - Wat maxpooling doet  
+2.3 - Hoe Convolutions dat dimensionality probleem oplossen: beelden hebben een hoge dimensie (bij. 224x224 maken in tot 150.528 input dimensies). Hidden layers in fully connected networks zijn groter dan de input, dit kan betekenen meer dan 22 miljard neurone.
+Pixels van beelden die dichtbij zijn,zijn ook statistisch aan elkaar verbonden. FC moeten patronen leren per pixel en in elke mogelijke positie terwijl bij beelden spraken is van samengestelde patronen in verschillende posities. CNN leren door gebruik te maken van minder parameters (gewichtjes) en kunnen omgaan met geaugmenteerde beelden (rotaties, uitgestrekt, gespiegeld enz.) en kunnen hierdoor patronen beter abstraheren.
+**Filter (convolutional kernel)**: convolutional layer met dezelfde gewichten op elke positie, berekent een gewogen som van de dichtbij inputs.
+Kernel size kan verhoogt worden maar blijf een oneven aantal zodat gecentreerd is op de huidige pixel positie. Grotere kernel== meer gewichten. Via dilatation rate kunnen 0 tussen de gewichten toegevoegd worden zodat er een grotere kernel gebuikt wordt maar niet meer gewichten.
+stride: (stap), stride = 1, elke positie word door de kernel berekend (groote blijft gelijk), stride =2 berekende de helft van de pixels
+convolutional layer: berekent de output door de input te bewerken en de bias toe te voegen en elke resultaat via een activatiefunctie door te geven. Elke convolutie genereert a nieuwe set van hidden variable (feature map of channel).
+Example: Kernel and Convolution in Action
+Let’s say we have a 3x3 kernel and a 5x5 input image:
+
+Input Image (5x5):
+
+[1 2 3 0 1
+ 4 5 6 1 2
+ 7 8 9 2 3
+ 1 3 5 1 4
+ 2 4 6 0 1]
+
+
+Kernel (3x3):
+
+[ 1 0 −1
+  1 0 −1
+  1 0 −1]
+​
+Now, let's apply the convolution operation with a stride of 1 and no padding. Starting from the top-left corner, we calculate the dot product between the kernel and the input image at that position. The first dot product is:
+
+(1∗1)+(0∗2)+(−1∗3)+(1∗4)+(0∗5)+(−1∗6)+(1∗7)+(0∗8)+(−1∗9)=−6
+This value (-6) will be placed in the output feature map. The kernel then moves to the next position, sliding over by one pixel (because of stride 1), and the process is repeated until the entire image is processed.
+
+De kernel in een CNN is een kleine matrix die over de invoergegevens beweegt en convolutie-operaties uitvoert om belangrijke kenmerken te extraheren. De kernel is verantwoordelijk voor het detecteren van specifieke patronen in de gegevens, en meerdere kernels worden meestal gebruikt om verschillende kenmerken op verschillende abstractieniveaus in een netwerk te detecteren. Deze geleerde patronen of kenmerken worden vervolgens doorgegeven aan diepere lagen voor verdere verwerking en classificatie.
+
+2.4 - Wat maxpooling doet: vermindert de dimensies door een gemiddelde of een maximum over een pool size (window) te berekenen.
+Max pooling vermindert de ruimtelijke dimensies van de feature map, terwijl de belangrijkste kenmerken behouden blijven door de maximumwaarde uit een venster van waarden te nemen.
+Het helpt de grootte van het netwerk te verkleinen, verhoogt de rekenkundige efficiëntie en verbetert de translatie-invariantie.
+Stride bepaalt hoeveel de pooling-window beweegt bij elke stap.
+De output feature map na pooling heeft kleinere ruimtelijke dimensies, maar **behoudt de diepte (aantal kanalen)**.
+
 2.5 - Wat een stride en padding zijn  
-2.6 - Wat een Convolution van 1x1 filter doet  
-2.7 - Kent ruwweg de innovaties die de verschillende architecturen doen: AlexNet, VGG, GoogleNet, ResNet, SENet  
-2.8 - Begrijpt wat overfitting is en hoe regularisatie (batchnorm, splits, dropout, learning rate) helpt.  
+2.6 - Wat een Convolution van 1x1 filter doet: Het 1x1 filter wordt toegepast op elke pixel van de input feature map, om de channels te verandere. Berekend een gewogen som van alle channels op een pixel positie. Imdat de filtermaat 1x1 is, kijkt het alleen naar de waarden van één pixel per keer en hierdoor is het mogelijk om de diepte (aantal kanalen) van de feature map te veranderen. 
+Lineaire transformatie: De 1x1 filter voert een lineaire transformatie uit door een gewichten matrix toe te passen op de verschillende kanalen (diepte) van de input. Hierdoor kunnen nieuwe, gecombineerde representaties van de input worden gemaakt zonder de ruimtelijke dimensies te beïnvloeden. 
+2.7 - Kent ruwweg de innovaties die de verschillende architecturen doen: AlexNet, VGG, GoogleNet, ResNet, SENet 
+Alexnet: eerste CNN die goed werkte (op Imagenet dataset). Vorzien van 8 hidden layers, Relu, eerste 5 convoluitonals en rest FC.
+VGG: dieper dan Alexnet, 18 lagen
+GoogleNet: hier werd de 1x1 kernel bedacht, nog diepere netwerk. Dit toonde wel aan dat meer lagen niet altijd beter performance opleverden. Dit heeft te maken met weight decay, die is groter naar mate meer lagen er zijn. Een kleine weiziging in de beginlagen kan grote gevolgen hebben op diepere lagen. (shattered gradients)
+ResNet: residual or skip connection zijn aftakkingen van een berekening waar de input van elke layer is weer toegevoegd aan de output op recursieve wijzen. De residual connection generre een ensambel van kleinere netwerken en hun output is samengevoegd (opgeteld) in een resultaat. 
+2.8 - Begrijpt wat overfitting is en hoe regularisatie (batchnorm, split van training/test/validation, dropout, learning rate) helpt.  
 
 De student kan:  
-2.9 - reproduceren hoe een Convolution schaalt (O(n)) ten opzicht van een NN (O(n^2))  
+2.9 - reproduceren hoe een Convolution schaalt (O(n)) ten opzicht van een NN (O(n^2))
+De schaling van een Convolutional Neural Network (CNN) in vergelijking met een Fully Connected Neural Network (FCNN) kan worden begrepen door naar het aantal berekeningen of parameters te kijken die nodig zijn om een input te verwerken. 
+1. Fully Connected Neural Network (FCNN) Schaling
+In een fully connected neural network (FCNN), ook wel een dense network, zijn alle neuronen in elke laag verbonden met alle neuronen in de volgende laag. Dit betekent dat het aantal verbindingen (parameters/gewichten) snel toeneemt naarmate je het aantal neuronen vergroot.
+
+Stel dat je een inputvector hebt van lengte n en dat je een verborgen laag hebt met m neuronen. De matrixvermenigvuldiging tussen de inputvector en de gewichtenmatrix van deze laag heeft O(n * m) berekeningen nodig. Als je meerdere lagen hebt, wordt de tijdcomplexiteit van het hele netwerk O(n^2) als het aantal lagen in het netwerk lineair toeneemt.
+
+Voorbeeld:
+
+Stel je voor dat je een netwerk hebt met 1000 inputneuronen en 1000 neuronen in de eerste verborgen laag. De aantal parameters (gewichten) is dan 1000 * 1000 = 1.000.000.
+Als je een netwerk hebt met 10 lagen, neemt het aantal berekeningen exponentieel toe, omdat elke laag met elke andere laag volledig verbonden is. De tijdcomplexiteit kan O(n^2) worden, afhankelijk van het aantal neuronen in elke laag.
+2. Convolutional Neural Network (CNN) Schaling
+In een Convolutional Neural Network (CNN), daarentegen, worden de berekeningen op een andere manier uitgevoerd. CNN's gebruiken convoluties om lokale patronen in de input te detecteren, wat resulteert in een betere schaling dan in een volledig verbonden netwerk. Dit komt omdat een convolutioneel filter maar een klein gedeelte van de input hoeft te verwerken (in plaats van de volledige input), en dit filter kan herhaaldelijk over de input worden toegepast om kenmerken te extraheren.
+
+De schaling van een CNN wordt meestal beschreven als O(n), omdat de convolutionele filters de input lokaal verwerken en geen volledige matrixvermenigvuldiging nodig hebben zoals in een FCNN.
+
+Waarom is het O(n) voor een CNN?
+Convolutie (filter toepassen): Stel dat je een 2D afbeelding van grootte n x n hebt (bijvoorbeeld 28x28 pixels), en je past een klein filter toe, bijvoorbeeld een 3x3 filter. In plaats van dat elke pixel met elke andere pixel wordt verbonden (zoals bij een volledig verbonden netwerk), wordt het filter slechts op een lokaal gebied toegepast (bijvoorbeeld 3x3 van de pixels) en schuift het filter door de afbeelding.
+
+Bij elke toepassing van het filter op een 3x3 regio, worden er slechts 9 berekeningen uitgevoerd.
+Het filter beweegt over de afbeelding met een bepaalde stapgrootte (stride), en daarom is het aantal convoluties (en dus de berekeningen) lineair gerelateerd aan de inputgrootte O(n).  
+Gewichten (Weights): Dit zijn specifieke parameters die de verbindingen tussen neuronen in een neuraal netwerk vertegenwoordigen.
+Parameters: Dit is de algemene term die alle waarden omvat die het netwerk leert, inclusief gewichten én biases.
+
 2.10 - Een configureerbaar Convolution NN bouwen en handmatig hypertunen  
 2.11 - MLFlow gebruiken naast gin-config  
 2.12 - een Machine Learning probleem classificeren als classificatie / regressie / reinforcement / (semi)unsupervised  
 2.13 - begrijpt welke dimensionaliteit een convolution nodig heeft en wat de strategieen zijn om dit te laten aansluiten op andere tensors  
 
+**Adjusting the Number of Filters**
+Gradually increasing filters: It's common practice to start with a small number of filters in the first layer and progressively increase them in subsequent layers. This is because the lower layers typically capture simpler, more general features (e.g., edges, colors), while the higher layers capture more complex, abstract features.
+In the context of Convolutional Neural Networks (CNNs), filters (also known as kernels) are small matrices or weights that are used to scan (or convolve) over the input data in order to detect specific features. These features can be patterns like edges, textures, or shapes in the input, and they are learned during the training process.
