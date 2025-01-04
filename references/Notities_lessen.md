@@ -67,7 +67,10 @@ First neuron idea is from 1943, perceptron (1958), 1980's backpropagatio develop
 1.12 **stappen van het trainen van een NN*-: datapreparatie, trainbare gewichten, predict, lossfunctie, optimizers 
 A supervised learning model is a fuction y = f[x, params] that relates input x to input y by parameters. To train the model we define a loss function over a training dataset which quantifies the mismatch between the prediction of f and the observed outputs y. We search the parameters that minimize the loss. We evaluate on a different set of data (test) to see how well it generalizes. 
 
+## LES 2
+
 2.1 - Verschillende loss functies (MSE en RMSE, Negative Log Likelihood, Cross Entropy Loss, Binary Cross Entropy loss) en in welke gevallen je ze moet gebruiken of vermijden:
+
 
 **RMSE**
 ### MSE (for regression models):
@@ -192,3 +195,423 @@ Parameters: Dit is de algemene term die alle waarden omvat die het netwerk leert
 **Adjusting the Number of Filters**
 Gradually increasing filters: It's common practice to start with a small number of filters in the first layer and progressively increase them in subsequent layers. This is because the lower layers typically capture simpler, more general features (e.g., edges, colors), while the higher layers capture more complex, abstract features.
 In the context of Convolutional Neural Networks (CNNs), filters (also known as kernels) are small matrices or weights that are used to scan (or convolve) over the input data in order to detect specific features. These features can be patterns like edges, textures, or shapes in the input, and they are learned during the training process.
+
+## LES 3
+3.1 - **motivatie is om RNNs te gebruiken**: RNNs zijn speciaal ontworpen om sequentiële gegevens te verwerken, zoals tijdseries, tekst, spraak of andere gegevens waarbij de volgorde van belang is. 
+Tijdreeksanalyse: In toepassingen zoals weersvoorspelling, aandelenmarktvoorspelling of sensor monitoring, zijn de gegevens afhankelijk van voorgaande tijdstappen. RNNs kunnen de context van eerdere tijdstappen behouden, wat ze geschikt maakt voor deze taken.
+
+1. Geheugen voor Vorige Informatie
+RNNs hebben een intern geheugen (door middel van hun terugkoppeling) waarmee ze informatie van eerdere tijdstappen kunnen onthouden. Dit is essentieel voor taken zoals:
+
+Taalmodellering: Waarbij de betekenis van een zin of tekst vaak afhangt van de vorige woorden.
+Spraakherkenning: Waarbij het systeem de context van vorige geluidsgolven moet begrijpen om de betekenis van de huidige geluidsgolf te interpreteren.
+3. Flexibiliteit bij Lange en Korte Afhankelijkheden
+RNNs kunnen zowel korte als lange termijn afhankelijkheden in de gegevens begrijpen. Ze kunnen de relatie tussen gegevens in opeenvolgende tijdstappen leren, wat cruciaal is voor bijvoorbeeld:
+
+Vertalen van zinnen: Waar de vertaling van een zin afhankelijk is van woorden of zinsdelen die ver in de zin liggen.
+Handschriftherkenning: Waar de context van eerdere tekens nodig is om de huidige te begrijpen.
+
+5. End-to-End Leerbaarheid
+In tegenstelling tot traditionele benaderingen waarbij vooraf gedefinieerde regels of handmatige kenmerken nodig zijn, kunnen RNNs leren van ruwe gegevens. Dit betekent dat ze de eind-naar-eind taak kunnen leren, zoals: Vertalen van teksten zonder vooraf gedefinieerde grammaticale regels en samenvatten van documenten door automatisch de belangrijkste informatie te extraheren.
+6. Gebruik in Diverse Toepassingen
+RNNs worden op grote schaal gebruikt in verschillende domeinen, zoals:
+Natural Language Processing (NLP): Voor tekstvertaling, samenvatting, sentimentanalyse, en spraakherkenning.
+Tijdreeksvoorspelling: Voor toepassingen in de financiën, gezondheidszorg en weerpatronen.
+Beeldbeschrijving: Voor het genereren van beschrijvingen van beelden (door sequenties van woorden te genereren op basis van beelden).
+
+3.2 - wat een window en horizon zijn: 
+**Window** (Venster): Het aantal voorgaande tijdstappen (gegevenspunten) die het model op elk moment gebruikt voor zijn berekeningen.
+**Horizon**: Het aantal toekomstige tijdstappen dat het model probeert te voorspellen of te voorspellen.
+3.3 - Wat belangrijk is bij datapreparatie om data leakage te voorkomen: leakage komt bij timeseries voor als de voorspellingen van een periode al gebaseerd zijn op data in latere tijdstippen
+3.4 - Hoe een simple RNN werkt (hidden state): In tegenstelling tot traditionele feedforward neurale netwerken, kunnen RNNs informatie uit het verleden behouden en gebruiken voor de verwerking van de huidige input. De informatie wordt in een hidden layer bewaard en meegegeven naar de volgende layers, naar mate van de vordering is wordt de begin informatie vergeten en de meest recenten informatie onthoueden.
+3.5 - Waarin een GRU en LSTM verschillen van RNN (gates): GRU (Gated Recurrent Unit) en LSTM (Long Short-Term Memory) zijn beide varianten van Recurrent Neural Networks (RNNs), ontworpen om enkele van de beperkingen van traditionele RNNs te overwinnen, zoals het probleem van vanishing gradients bij lange sequenties. LSTM heeft twee gates die bepalen welke info belangrij is voor onthouden en welke vergeten mag worden. De GRU heeft maar een gate, update gate, die bepaald welke info doorgegeven wordt.
+
+**GRU (Gated Recurrent Unit)**
+Simpele structuur: GRU heeft een eenvoudiger ontwerp dan LSTM. Het maakt gebruik van twee gates:
+**Update gate (reset gate)**: Dit regelt hoeveel van de vorige toestand wordt behouden en hoeveel van de nieuwe informatie wordt toegevoegd.
+**Reset gate**: Het bepaalt hoeveel van de vorige geheugentoestand moet worden "vergeten".
+Aantal gates: GRU heeft minder parameters dan LSTM omdat het maar twee gates gebruikt. Dit maakt GRU sneller om te trainen en efficiënter in gebruik van geheugen.
+**LSTM (Long Short-Term Memory)**
+Complexe structuur: LSTM heeft drie gates die de stroom van informatie door de tijdstappen regelen:
+**Forget gate**: Regelt hoeveel van de vorige toestand moet worden vergeten.
+**Input gate**: Regelt hoeveel nieuwe informatie moet worden toegevoegd aan de toestand.
+**Output gate**: Regelt welke informatie uit de toestand naar de volgende laag wordt doorgestuurd.
+Meer complexiteit: LSTM heeft meer parameters omdat het drie gates bevat in plaats van twee. Dit maakt het krachtiger dan GRU in sommige gevallen, maar het kan ook langzamer en geheugenintensiever zijn om te trainen.
+
+# Belangrijkste verschillen tussen RNN, GRU en LSTM
+
+| Eigenschap                    | **RNN**                                  | **GRU**                                | **LSTM**                               |
+|-------------------------------|------------------------------------------|----------------------------------------|----------------------------------------|
+| **Aantal Gates**               | Geen (basis RNN heeft geen gates)        | 2 gates (update, reset)                | 3 gates (forget, input, output)       |
+| **Complexiteit**               | Eenvoudig, maar slecht in lange afhankelijkheden | Minder complex dan LSTM, maar krachtiger dan RNN | Complexer dan GRU, maar krachtig voor lange afhankelijkheden |
+| **Trainingsefficiëntie**       | Kan moeilijk trainen bij lange sequenties (vanishing gradients) | Sneller dan LSTM door minder parameters | Langzamer dan GRU, maar kan betere prestaties leveren bij complexe taken |
+| **Geheugen**                   | Kan niet goed lange-afhankelijke informatie onthouden | Beter in het onthouden van lange-afhankelijke informatie dan RNN | Uitstekend in het onthouden van lange-afhankelijke informatie |
+| **Gebruik**                    | Geschikt voor kortere sequenties         | Geschikt voor lange sequenties met minder complexiteit dan LSTM | Geschikt voor lange sequenties met complexe afhankelijkheden |
+
+### Samenvatting:
+- **RNNs** zijn eenvoudig, maar hebben moeite om lange-afhankelijke informatie vast te houden vanwege vanishing gradients.
+- **GRUs** zijn eenvoudiger dan LSTMs en hebben minder parameters, maar zijn toch krachtig in het behouden van lange-afhankelijke informatie.
+- **LSTMs** hebben een complexere architectuur met drie gates, waardoor ze in staat zijn om lange-afhankelijke informatie effectief vast te houden en beter presteren in complexere taken.
+
+Kies het model afhankelijk van de taak:
+- **RNN** voor eenvoudige taken met korte sequenties.
+- **GRU** voor efficiënte training met lange sequenties.
+- **LSTM** voor taken waarbij het belangrijk is om lange termijn afhankelijkheden vast te houden.
+3.6 - Wat de functies van een gate zijn (remember, forget, something in between)
+3.7 - Hoe een gate werkt (met een hadamard product)
+# Hoe werkt een gate (met een Hadamard product)?
+
+In het kader van **GRU** (Gated Recurrent Unit) en **LSTM** (Long Short-Term Memory) netwerken spelen **gates** een cruciale rol in het reguleren van hoeveel informatie wordt doorgegeven of vergeten op basis van de huidige input en de vorige toestand. De werking van een gate kan vaak worden beschreven met behulp van een **Hadamard product** (elementgewijze vermenigvuldiging).
+
+## Wat is het Hadamard product?
+Het **Hadamard product** (ook wel elementgewijze vermenigvuldiging genoemd) is de vermenigvuldiging van twee matrices van gelijke afmetingen, waarbij elk element van de eerste matrix wordt vermenigvuldigd met het overeenkomstige element van de tweede matrix.
+
+Als we bijvoorbeeld twee vectoren \( \mathbf{a} = [a_1, a_2, \dots, a_n] \) en \( \mathbf{b} = [b_1, b_2, \dots, b_n] \) hebben, dan is hun Hadamard product \( \mathbf{c} = \mathbf{a} \circ \mathbf{b} \), waarbij:
+
+\[
+\mathbf{c} = [a_1 \cdot b_1, a_2 \cdot b_2, \dots, a_n \cdot b_n]
+\]
+
+Het Hadamard product wordt vaak aangeduid met het symbool \( \circ \).
+
+## Hoe werken gates in GRU en LSTM met het Hadamard product?
+
+In **GRU** en **LSTM** werken de **gates** door de stroom van informatie te reguleren, en dit wordt vaak gedaan met behulp van een combinatie van **sigmoid**- en **tanh**-activeringsfuncties in combinatie met het Hadamard product.
+
+### 1. **GRU:**
+In een **GRU** zijn er twee belangrijkste gates:
+- **Update gate (z)**: Regelt hoeveel van de vorige toestand moet worden behouden.
+- **Reset gate (r)**: Regelt hoeveel van de vorige toestand moet worden vergeten.
+
+#### Werking van de gates in GRU:
+- De **update gate (z)** bepaalt hoeveel van de vorige toestand \( h_{t-1} \) wordt meegenomen in de nieuwe toestand \( h_t \). Dit gebeurt met behulp van een **Hadamard product**:
+
+\[
+h_t = (1 - z_t) \circ h_{t-1} + z_t \circ \tilde{h_t}
+\]
+
+waarbij:
+- \( h_{t-1} \) de vorige toestand is,
+- \( \tilde{h_t} \) de kandidaat-toestand is, die wordt berekend met behulp van de reset gate \( r_t \) en de huidige input \( x_t \),
+- \( z_t \) de update gate is die bepaalt hoeveel van de vorige toestand moet worden behouden (door \( z_t \) te vermenigvuldigen met \( \tilde{h_t} \)) en hoeveel nieuwe informatie wordt toegevoegd.
+
+Het Hadamard product komt hier in de vorm van de multiplicatie tussen \( (1 - z_t) \) en \( h_{t-1} \), en tussen \( z_t \) en \( \tilde{h_t} \), wat zorgt voor de juiste gewichtsverhouding van oude en nieuwe informatie.
+
+### 2. **LSTM:**
+In een **LSTM** hebben we drie belangrijke gates:
+- **Forget gate (f)**: Regelt hoeveel van de vorige toestand moet worden vergeten.
+- **Input gate (i)**: Regelt hoeveel nieuwe informatie wordt toegevoegd aan de cellen.
+- **Output gate (o)**: Regelt hoeveel informatie uit de cellen naar de output wordt doorgegeven.
+
+#### Werking van de gates in LSTM:
+LSTM's gebruiken ook het Hadamard product om de informatie te reguleren. De formules voor de update van de cellen en toestand zijn als volgt:
+
+- **Forget gate (f)**: Het bepaalt hoeveel van de vorige cell state \( C_{t-1} \) moet worden vergeten:
+
+\[
+f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f)
+\]
+
+- **Input gate (i)**: Het bepaalt hoeveel van de nieuwe informatie (gebaseerd op de huidige input en de vorige toestand) wordt toegevoegd:
+
+\[
+i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)
+\]
+
+- **Nieuwe kandidaat-toestand ( \( \tilde{C_t} \))**: Dit is de nieuwe informatie die aan de cellen moet worden toegevoegd:
+
+\[
+\tilde{C_t} = \tanh(W_C \cdot [h_{t-1}, x_t] + b_C)
+\]
+
+- **Celstate update (C_t)**: De nieuwe celstaat wordt berekend door de forget gate, input gate en kandidaat-toestand te combineren:
+
+\[
+C_t = f_t \circ C_{t-1} + i_t \circ \tilde{C_t}
+\]
+
+- **Output gate (o)**: Het bepaalt hoeveel van de cellstate \( C_t \) wordt doorgestuurd naar de output \( h_t \):
+
+\[
+h_t = o_t \circ \tanh(C_t)
+\]
+
+Hier komt het Hadamard product naar voren bij de combinaties van de gates met de cellstate en de kandidaat-toestand:
+
+- Het **Hadamard product** wordt gebruikt om te bepalen hoeveel van de vorige celstaat \( C_{t-1} \) moet worden behouden (door \( f_t \) te vermenigvuldigen met \( C_{t-1} \)) en hoeveel van de nieuwe celstaat \( \tilde{C_t} \) moet worden toegevoegd (door \( i_t \) te vermenigvuldigen met \( \tilde{C_t} \)).
+
+## Samenvatting:
+- **Hadamard product** in **gates**: In zowel **GRU** als **LSTM** wordt het Hadamard product gebruikt om de mate van informatie-overdracht te reguleren. Het combineert verschillende componenten van de informatie (zoals de vorige toestand en de kandidaat-toestand) door ze elementgewijs te vermenigvuldigen met de output van de gates.
+- **GRU** heeft minder gates (twee), waardoor het eenvoudiger is dan **LSTM**, dat drie gates heeft voor complexere controle over de informatiestroom.
+
+Door deze mechanismen kunnen **GRU** en **LSTM** netwerken effectief lange-termijn afhankelijkheden leren en het vanishing gradient probleem aanpakken.
+
+**Waarom twee activaties in LSTM?**
+
+**Sigmoid** wordt gebruikt voor de gates omdat het waarden tussen 0 en 1 oplevert, waardoor het perfect geschikt is voor beslissingen over hoeveel informatie doorgegeven of vergeten moet worden.
+**Tanh** wordt gebruikt voor het transformeren van de celtoestand, omdat het helpt om de waarde tussen -1 en 1 te schalen, wat gunstig is voor het bewaren van de interne toestand van het geheugen in de LSTM.
+Door deze twee activaties te combineren, kunnen LSTM's zowel het vergeten van irrelevante informatie als het behoud van belangrijke informatie voor langere perioden mogelijk maken, wat essentieel is voor het leren van lange-afhankelijke relaties in sequentiële gegevens.
+
+3.8 - wat de voor en nadelen van een LSTM vs GRU vs RNN zijn
+3.9 - hoe windowing werkt bij timeseries, en waarom dat relevant is
+3.10 - hoe 1D convolutions werken bij timeseries: 1D-convoluties (1D convolutions) worden vaak toegepast bij tijdreeksen (time series) en sequentiële gegevens (zoals spraak, tekst, sensorgegevens, enz.) om belangrijke kenmerken te extraheren zonder de noodzaak voor complexe recurrente netwerken zoals RNN's, GRU's of LSTM's. Een 1D-convolutie werkt door een filter (kern) door de inputtijdreeks te schuiven en op elk punt een convolutie uit te voeren om nieuwe representaties van de tijdreeks te creëren. Dit proces helpt bij het detecteren van patronen in de gegevens, zoals pieken, dalen, periodiciteit en trends.
+
+**Hoe werken 1D-convoluties bij tijdreeksen?**
+Een 1D-convolutie past een filter toe op een lokale regio van de tijdreeks, wat betekent dat de filter over een klein gedeelte van de reeks schuift en een nieuwe waarde genereert door de gewogen som van de waarden in dat gedeelte te berekenen.
+
+3.11 - begrijpt hoe een naive model werkt en wat de motivatie hierachter is (MASE metric): 
+Een naïef model in tijdreeksanalyse is een eenvoudig model dat vaak wordt gebruikt als basislijn voor het evalueren van de prestaties van complexere modellen. Het is gebaseerd op het idee dat de toekomstige waarden van een tijdreeks op de een of andere manier direct gerelateerd zijn aan de waarden van de tijdreeks op het vorige tijdstip. Het naïeve model maakt geen gebruik van ingewikkelde voorspellende technieken of patronen, maar gebruikt in plaats daarvan een eenvoudige regel.
+
+## MASE (Mean Absolute Scaled Error) Metric
+
+De **Mean Absolute Scaled Error (MASE)** is een veelgebruikte evaluatiemetric die de prestaties van een voorspellingsmodel vergelijkt met die van een naïef model. Het helpt bij het beoordelen van de effectiviteit van een model door het gemiddelde absolute fout te schalen op basis van de naïeve voorspelling.
+
+De MASE wordt berekend als:
+
+\[
+\text{MASE} = \frac{\frac{1}{n} \sum_{t=1}^{n} |y_t - \hat{y}_t|}{\frac{1}{n-1} \sum_{t=2}^{n} |y_t - y_{t-1}|}
+\]
+
+waar:
+- \( y_t \) de werkelijke waarde is op tijdstip \( t \),
+- \( \hat{y}_t \) de voorspelde waarde is op tijdstip \( t \),
+- \( n \) het aantal tijdsperioden is,
+- de noemer is de gemiddelde absolute fout van het naïeve model.
+
+### Interpretatie van MASE:
+
+- **MASE < 1**: Het model presteert beter dan het naïeve model.
+- **MASE = 1**: Het model presteert even goed als het naïeve model.
+- **MASE > 1**: Het model presteert slechter dan het naïeve model.
+
+De MASE is schaal-invariant, wat betekent dat het niet gevoelig is voor de grootte van de tijdsreeks, waardoor het een handige metric is voor het vergelijken van modellen op verschillende datasets.
+
+## Samenvatting
+
+- Een **naïef model** is een eenvoudig voorspellingsmodel dat vaak gebruikt wordt als benchmark voor meer complexe modellen.
+- De **MASE metric** vergelijkt de prestaties van een model met een naïef model en geeft inzicht in de relatieve effectiviteit van het voorspellingsmodel.
+
+## Les 4
+4.1 - wat een wordembedding is en wat de motivatie is tov one-hot-encoding
+4.2 - wat de curse of dimensionality is (bv met betrekking tot de searchspace)
+4.3 - wat de voordelen van Ray zijn
+4.4 - Hoe bayesian search en hyperband werken
+4.5 - wat een learning rate scheduler is, en hoe je kunt herkennen dat je er een nodig hebt.
+4.6 - Kent verschillende soorten schedulers (cosine warm up, reduce on plateau) en weet wanneer ze te gebruiken
+4.7 - Begrijpt in welke situaties transfer-learning zinvol is
+
+De student kan:
+4.8 - de parameters in een pretrained model fixeren zodat het uitgebreid en gefinetuned kan worden
+4.9 - Een pretrained model uitbreiden met een extra neuraal netwerk
+4.10 - Een python script bouwen dat een configureerbaar model via Ray hypertuned.
+4.11 - De student kan redeneren over de grootte van de hyperparameter ruimte, daar afwegingen in maken (curse of dimensionality) en prioriteiten stellen in de tuning van hyperparameters zoals lossfuncties, learning rate, units, aantal lagen, aantal filters, combinatie van Dense / Convolution.
+4.12 - een afweging maken tussen de verschillende manieren om een model te monitoren (gin, tensorboard, mlflow, ray)
+
+## LES 5
+
+5.1 - Precision vs Recall trade off, Confusion matrix, ethische problemen van de trade off
+# Precision vs Recall Trade-off
+
+In machine learning en informatie-extractie, vooral bij classificatietaken, worden **precision** en **recall** vaak gebruikt als evaluatiemetrics. Deze twee metrics zijn essentieel voor het beoordelen van de prestaties van een model, maar ze zijn vaak in conflict met elkaar. Het **trade-off** tussen precision en recall betekent dat een verbetering in de ene metric meestal leidt tot een verslechtering in de andere.
+
+## Definitie van Precision en Recall
+
+1. **Precision**:
+   Precision meet hoe nauwkeurig de positieve voorspellingen van het model zijn. Het geeft aan hoeveel van de voorspelde positieve gevallen daadwerkelijk correct zijn.
+
+   \[
+   \text{Precision} = \frac{\text{True Positives}}{\text{True Positives} + \text{False Positives}}
+   \]
+   Waar:
+   - **True Positives (TP)**: Correct voorspelde positieve gevallen.
+   - **False Positives (FP)**: Onterecht voorspelde positieve gevallen.
+
+2. **Recall (Sensitiviteit of True Positive Rate)**:
+   Recall meet hoe goed het model daadwerkelijk alle positieve gevallen kan identificeren. Het geeft aan hoeveel van de werkelijke positieve gevallen correct werden voorspeld.
+
+   \[
+   \text{Recall} = \frac{\text{True Positives}}{\text{True Positives} + \text{False Negatives}}
+   \]
+   Waar:
+   - **True Positives (TP)**: Correct voorspelde positieve gevallen.
+   - **False Negatives (FN)**: Positieve gevallen die onterecht als negatief werden voorspeld.
+
+## Het Trade-off Tussen Precision en Recall
+
+De **trade-off** ontstaat doordat het verhogen van één metric vaak leidt tot het verlagen van de andere.
+
+- **Verhogen van Precision**: Als je de drempel voor het voorspellen van een positief geval verhoogt (bijvoorbeeld door een model alleen positieve gevallen te laten voorspellen wanneer het heel zeker is), krijg je een hogere precision. Dit kan echter leiden tot een lagere recall, omdat sommige werkelijke positieve gevallen worden gemist (False Negatives).
+
+- **Verhogen van Recall**: Als je de drempel verlaagt om meer gevallen als positief te classificeren (bijvoorbeeld door een model te laten voorspellen dat iets positief is, zelfs als het niet helemaal zeker is), zal de recall stijgen. Dit kan echter de precision verlagen, omdat er meer False Positives zullen zijn.
+
+### Voorbeeld
+
+Stel je voor dat je een model hebt dat kanker detecteert:
+
+- **Precision hoog**: Het model voorspelt alleen "kanker" als het zeer zeker is. Dit betekent dat wanneer het zegt "kanker", het bijna altijd juist is, maar mogelijk mis je enkele echte gevallen van kanker (lage recall).
+  
+- **Recall hoog**: Het model voorspelt vaker "kanker", waardoor het meer echte gevallen van kanker oppikt. Maar het kan ook onterecht veel mensen "kanker" voorspellen, die het niet hebben (lage precision).
+
+## F1-Score
+
+De **F1-score** is een metriek die een balans probeert te vinden tussen precision en recall. Het is het harmonisch gemiddelde van de twee:
+
+\[
+F1 = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}
+\]
+
+De F1-score is handig wanneer zowel precision als recall belangrijk zijn en je een enkele metric wilt die het compromis tussen de twee weerspiegelt.
+
+### Interpretatie van de F1-score:
+
+- **Hoge F1-score**: Het model heeft zowel een goede precision als recall.
+- **Lage F1-score**: Het model presteert slecht op een van beide metrics (of beide).
+
+## Keuze tussen Precision en Recall
+
+De keuze tussen het optimaliseren van precision of recall hangt af van de specifieke context van de taak:
+
+- **Als je False Positives belangrijker vindt** (bijvoorbeeld bij e-mailspamdetectie, waar je geen onterecht belangrijke e-mail als spam wilt markeren), dan kan je de voorkeur geven aan **precision**.
+  
+- **Als je False Negatives belangrijker vindt** (bijvoorbeeld bij medische diagnoses, waar je zeker wilt zijn dat je geen ziekten mist), dan zou je meer nadruk moeten leggen op **recall**.
+
+## Samenvatting
+
+- **Precision** is de nauwkeurigheid van de _positieve voorspellingen_.
+- **Recall** is het vermogen om alle werkelijke positieve gevallen te vinden.
+- Er is vaak een **trade-off** tussen precision en recall, waarbij het verbeteren van de ene metric ten koste van de andere gaat.
+- De **F1-score** biedt een gebalanceerde evaluatie van de prestaties, vooral wanneer zowel precision als recall belangrijk zijn.
+
+Het kiezen van de juiste benadering hangt af van de specifieke vereisten van de applicatie.
+
+5.2 - de motivatie achter attention (vs convolutions)
+# Motivatie Achter Attention (vs Convolutions)
+
+In recente jaren heeft **Attention** veel aandacht gekregen, vooral in de context van neurale netwerken en natuurlijke taalverwerking (NLP). Het concept van attention heeft verschillende voordelen in vergelijking met traditionele technieken zoals **convoluties** in **Convolutional Neural Networks (CNN's)**. In dit document onderzoeken we de motivatie en de belangrijkste verschillen tussen **attention** en **convoluties**.
+
+## Wat zijn Convoluties?
+
+**Convoluties** zijn de kern van **Convolutional Neural Networks (CNN's)**, die oorspronkelijk populair werden in beeldherkenningstaken. Het basisidee van convoluties is om lokale patronen in de invoerdata (zoals pixels in een afbeelding) te detecteren door middel van een filter (kern). Deze filter beweegt over de input en berekent de convolutie, wat resulteert in feature maps die lokale kenmerken vastleggen.
+
+- **Voordeel van convoluties**: Convoluties zijn effectief voor het detecteren van lokale patronen zoals randen, hoeken en texturen in afbeeldingen. Ze zijn verticaal, horizontaal en in meerdere schalen toepasbaar, wat ze krachtig maakt voor visuele taken.
+- **Beperkingen van convoluties**: Convoluties hebben echter moeite om lange-afstand afhankelijkheden vast te leggen. In een afbeelding bijvoorbeeld, is er weinig context buiten het lokale gebied van een filter. Dit kan problematisch zijn bij complexere taken, zoals tekstverwerking en lange sequenties van data.
+
+## Wat is Attention?
+
+**Attention** is een mechanismen dat oorspronkelijk werd voorgesteld in de context van machinevertaling, maar nu wijdverbreid wordt gebruikt in NLP en andere domeinen zoals vision. Het idee van attention is om dynamisch te bepalen welke delen van de input op een bepaald moment het meest relevant zijn voor het maken van een voorspelling. Dit staat modellen toe om verschillende delen van de invoer op verschillende tijdstippen meer "aandacht" te geven.
+
+Een bekend voorbeeld van attention is de **self-attention** in Transformer-modellen, zoals **BERT** en **GPT**.
+
+### Hoe werkt Attention?
+
+Het principe van attention is eenvoudig:
+- Voor een bepaalde invoer (bijvoorbeeld een woord in een zin), berekent het model een gewicht voor elk ander woord in de zin (of elke andere input).
+- Deze gewichten reflecteren hoeveel **aandacht** elk woord verdient bij het voorspellen van de huidige output.
+
+Bijvoorbeeld, in een zin als "De kat zat op de mat", kan het model meer aandacht geven aan "kat" als het woord "zat" moet worden voorspeld, en minder aan andere woorden zoals "de" of "mat".
+
+### Types van Attention:
+- **Self-attention**: Elke positie in de input kijkt naar alle andere posities om context te verzamelen (zoals in Transformers).
+- **Bahdanau Attention**: Gebruikt gewichten die de relevantie van verschillende invoer-elementen bepalen in een sequence-to-sequence taak.
+
+## Vergelijking: Attention vs Convoluties
+
+### 1. **Lange-afstandsafhankelijkheden**:
+- **Convoluties**: Convoluties kunnen alleen lokale patronen herkennen. Als een object of patroon zich ver van andere objecten bevindt, kunnen convoluties moeite hebben om deze lange-afstandsafhankelijkheden vast te leggen.
+- **Attention**: Attention maakt het mogelijk om **globale afhankelijkheden** vast te leggen, ongeacht de afstand tussen de relevante elementen in de input. Dit is vooral nuttig voor taken zoals taalverwerking, waar de betekenis van een woord vaak afhankelijk is van de context van woorden verderop in de zin.
+
+### 2. **Flexibiliteit**:
+- **Convoluties**: Het aantal filterparameters is meestal vast en wordt vooraf gedefinieerd. Hierdoor is het moeilijk om het model dynamisch aan te passen aan verschillende taken zonder de architectuur te veranderen.
+- **Attention**: Het model past zich dynamisch aan door de nadruk te leggen op verschillende delen van de invoer. Dit maakt het model flexibeler in vergelijking met convoluties, vooral voor sequentiële data en taken zoals vertaling en tekstbegrip.
+
+### 3. **Computational Efficiency**:
+- **Convoluties**: Convoluties zijn relatief **computationally efficiënt**, omdat ze lokale patronen parallel kunnen verwerken. Dit is een reden waarom CNN's goed presteren bij beeldherkenning.
+- **Attention**: **Self-attention** in zijn klassieke vorm, zoals in het Transformer-model, kan computationeel intensiever zijn, vooral bij lange sequenties. Dit komt doordat elk element in de sequentie met elk ander element interactie heeft, wat leidt tot een kwadratische complexiteit (O(n²)).
+
+### 4. **Verwerking van Sequentiële Data**:
+- **Convoluties**: CNN's zijn goed in het verwerken van **local dependencies**, maar missen de mogelijkheid om lange-afstandsafhankelijkheden efficiënt te modelleren.
+- **Attention**: Attention is ontworpen om sequentiële gegevens zoals tekst, waar de volgorde en de relaties tussen de elementen essentieel zijn, beter te verwerken. Het biedt de mogelijkheid om een woord in een zin contextueel te begrijpen, ongeacht de positie ervan in de sequentie.
+
+### 5. **Interpretabiliteit**:
+- **Convoluties**: De interpretatie van de filters in CNN's is vaak moeilijker, omdat ze vaak op een abstract niveau werken om patronen te detecteren.
+- **Attention**: Attention heeft een grotere **interpretabiliteit**, omdat het expliciet gewichten geeft aan verschillende delen van de invoer. Dit maakt het makkelijker te begrijpen welk deel van de input het model "belangrijk" vindt voor een specifieke voorspelling.
+
+## Motivatie Achter Attention
+
+- **Contextual Awareness**: In veel toepassingen, zoals taalmodellen, is de volgorde en de onderlinge afhankelijkheid van elementen cruciaal. Attention biedt een krachtig mechanisme om dynamisch de context te begrijpen, terwijl convoluties moeite hebben om lange-afstandsrelaties vast te leggen.
+  
+- **Flexibiliteit en Aanpasbaarheid**: Attention kan zich gemakkelijker aanpassen aan verschillende datadomeinen (zoals tekst en afbeeldingen) door de nadruk te leggen op relevante delen van de invoer.
+
+- **Parallelisatie**: Moderne varianten van attention, zoals de **Transformer**, maken efficiënte parallelle verwerking mogelijk, wat een grote versnelling biedt in training en inferentie, zelfs bij lange sequenties.
+
+## Conclusie
+
+- **Convoluties** blijven effectief voor taken die voornamelijk afhangen van lokale patronen (zoals in beeldherkenning), maar hebben moeite met het modelleren van lange-afstandsafhankelijkheden.
+- **Attention** biedt een krachtiger alternatief voor taken die complexe, lange-afstandsrelaties vereisen, zoals taalverwerking en sequentiële data. Het biedt **flexibiliteit** en de mogelijkheid om zowel lokale als globale contexten vast te leggen.
+
+5.3 - wat een semantische vectorruimte is
+# Wat is een Semantische Vectorruimte?
+
+Een **semantische vectorruimte** is een wiskundige representatie van betekenis, waarbij woorden, zinnen, of andere taalobjecten worden omgezet in vectoren in een hoge-dimensionale ruimte. In deze ruimte wordt de betekenis van taalobjecten vastgelegd door hun **relaties** en **semantische overeenkomsten** met andere objecten in de ruimte.
+
+Het idee is om betekenis niet alleen op basis van de letters of symbolen van een woord vast te leggen, maar door de **context** en **relaties** tussen woorden, zinnen, of zelfs documenten te begrijpen. De semantische vectorruimte biedt een manier om **taal op een numerieke manier** te representeren, zodat computers gemakkelijker met natuurlijke taal kunnen werken.
+
+## Kernconcepten van Semantische Vectorruimtes
+
+1. **Vectorrepresentatie van Taal**:
+   - In een semantische vectorruimte worden woorden, zinnen, of zelfs grotere taalconstructies zoals documenten gerepresenteerd door **vectoren** (numerieke lijsten van getallen). Deze vectoren bevinden zich in een hoge-dimensionale ruimte, vaak met honderden of duizenden dimensies.
+   - Woorden die semantisch dicht bij elkaar liggen (d.w.z. die in een vergelijkbare context voorkomen of een vergelijkbare betekenis hebben) worden gerepresenteerd door vectoren die **dicht bij elkaar** liggen in de ruimte.
+
+2. **Relaties en Semantische Betekenis**:
+   - In een semantische vectorruimte weerspiegelen de **relaties tussen woorden** de betekenis van die woorden in context. Bijvoorbeeld, in zo'n ruimte zullen de woorden "koning" en "koningin" relatief dicht bij elkaar liggen, omdat ze vaak in vergelijkbare contexten worden gebruikt.
+   - De vectoren kunnen zelfs **verhouding** tussen woorden weergeven, zoals het voorbeeld:
+     \[
+     \text{"koning" - "man" + "vrouw" = "koningin"}
+     \]
+   - Dit toont aan hoe semantische vectorruimtes niet alleen de gelijkenis tussen woorden kunnen vangen, maar ook **relaties** en **verschillen** tussen woorden kunnen modelleren.
+
+3. **Gebruik van Embeddings**:
+   - **Word embeddings** zoals **Word2Vec**, **GloVe**, en **FastText** zijn populaire technieken die woorden omzetten naar vectoren in een semantische vectorruimte. Deze embeddings worden getraind op grote hoeveelheden tekst, zodat de vectoren de semantische betekenis van woorden reflecteren.
+   - **Sentence embeddings** of **document embeddings** zijn uitbreidingen van dit idee, waarbij niet alleen woorden, maar ook langere tekstfragmenten een vectorrepresentatie krijgen.
+
+## Toepassingen van Semantische Vectorruimtes
+
+1. **Zoeken en Informatie Retrieval**:
+   - Semantische vectorruimtes kunnen worden gebruikt voor **zoekmachines**, waarbij de zoekquery en de documenten in de vectorruimte worden geplaatst. Documenten die semantisch dicht bij de zoekopdracht liggen, worden als relevanter beschouwd, zelfs als ze niet exact dezelfde woorden bevatten.
+
+2. **Tekstanalyse en Sentimentanalyse**:
+   - Vectorruimtes worden gebruikt in veel NLP-taken zoals **sentimentanalyse** of **topicmodellering** om te begrijpen of een tekst positief, negatief of neutraal is, en om te detecteren welke onderwerpen aanwezig zijn in een tekst.
+
+3. **Vertaling en Meertalige Modellen**:
+   - In **machinevertaling** worden semantische vectorruimtes gebruikt om woorden in verschillende talen te verbinden. Een goed getraind semantisch model kan bijvoorbeeld "apple" in het Engels en "manzana" in het Spaans dichter bij elkaar plaatsen in de vectorruimte, omdat ze dezelfde betekenis vertegenwoordigen.
+
+4. **Synoniemen en Clustering**:
+   - Woorden die semantisch verwant zijn, zoals "auto" en "voertuig", zullen dicht bij elkaar liggen in de semantische vectorruimte. Dit maakt het mogelijk om synoniemen te detecteren en woorden te clusteren op basis van hun betekenis.
+
+## Voordelen van Semantische Vectorruimtes
+
+1. **Contextualisatie van Betekenis**:
+   - Semantische vectorruimtes kunnen **contextualisatie** van betekenis vastleggen. Dit betekent dat hetzelfde woord in verschillende contexten verschillende vectoren kan hebben, wat de precisie van taalmodellen verhoogt.
+   
+2. **Verbeterde Zoekfunctionaliteit**:
+   - Omdat de betekenis van woorden en zinnen in vectorruimtes is vastgelegd, kunnen zoeksystemen **semantisch begrijpen** wat de gebruiker bedoelt, niet alleen wat de exacte zoekwoorden zijn.
+
+3. **Schaalbaarheid**:
+   - Semantische vectorruimtes kunnen worden getraind op enorme hoeveelheden tekst en kunnen gemakkelijk worden toegepast op verschillende talen en domeinen.
+
+## Conclusie
+
+Een **semantische vectorruimte** is een krachtige manier om taal te representeren door woorden, zinnen of documenten als vectoren in een hoge-dimensionale ruimte te plaatsen. Deze representaties helpen om **betekenis** en **relaties** tussen taalobjecten vast te leggen, wat nuttig is voor veel toepassingen in natuurlijke taalverwerking (NLP), zoals zoekopdrachten, vertaling, tekstclassificatie en meer. Door de krachtige relaties en semantische contexten die worden vastgelegd, biedt de semantische vectorruimte een geavanceerde manier om taal te begrijpen en te verwerken.
+
+5.4 - Hoe het "reweighing" van word-embeddings werkt met behulp van attention
+5.5 - waarom scaling en masking nodig zijn
+5.6 - wat multihead attention is
+5.7 - wat positional encoding is, en waarom dat behulpzaam kan zijn
+5.8 - kan uitleggen hoe attention behulpzaam is bij timeseries in het algemeen, en NLP in het bijzonder.
+5.9 - kent het verschil in dimensionaliteit van tensors (2D tensors, 3D tensors, 4D tensors) voor de diverse lagen (Dense, 1D en 2D Convulutionl, MaxPool, RNN/GRU/LSTM, Attention, Activation functions, Flatten) en hoe deze met elkaar te combineren zijn.
+
+Vaardigheden:
+
+5.10 - een attention layer toevoegen aan een RNN model
+5.11 - kan een preprocessor voor NLP maken (bv punctuation, lowercase, spaces en xml strippen)
+5.12 - een datapreprocessor aanpassen voor een dataset
