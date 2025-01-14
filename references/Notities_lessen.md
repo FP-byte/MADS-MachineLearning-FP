@@ -1,3 +1,8 @@
+Flashcards:
+https://www.revisely.com/flashcards/decks/yh8M79 Les 1-2
+https://www.revisely.com/flashcards/decks/8cgzeT CNN
+https://www.revisely.com/flashcards/decks/vTJimV RNN
+
 1.1 Wat *tensors* zijn en voorbeelden voor de dimensies tm 5D
 Tensor: vector of (2D) matrix van vectoren, (3D) (batch, hoogte, breedte), 4D (batch, hoogte, breedt, kanalen), 5D (batch, frames, hoogte, breedte, kanalen) bijv. van videostreaming
 1.2  hoe neurale netwerken zijn opgebouwd (linear + activation), en hoe ze een extensie zijn van lineaire modellen (wanneer kun je ze stapelen)  
@@ -397,8 +402,31 @@ De MASE is schaal-invariant, wat betekent dat het niet gevoelig is voor de groot
 4.3 - wat de voordelen van Ray zijn
 4.4 - Hoe bayesian search en hyperband werken
 4.5 - wat een learning rate scheduler is, en hoe je kunt herkennen dat je er een nodig hebt.
+scheduler_kwargs={"factor": 0.5, "patience": 5}
+factor: Dit is de factor waarmee de leersnelheid wordt verminderd (of soms verhoogd) als er geen verbetering optreedt in de prestaties van het model na een bepaald aantal stappen (dit aantal wordt bepaald door patience). Bijvoorbeeld, als de factor 0.5 is, betekent dit dat de leersnelheid met 50% wordt verlaagd wanneer de voorwaarden worden voldaan.
+
+patience: Dit is het aantal epochs (of iteraties) waarop het model geen verbetering mag laten zien in de prestatie (bijvoorbeeld validatieverlies) voordat de leersnelheid wordt aangepast. Als patience is ingesteld op 5, betekent dit dat de scheduler de leersnelheid pas zal verlagen nadat er 5 opeenvolgende epochs zonder verbetering zijn.
 4.6 - Kent verschillende soorten schedulers (cosine warm up, reduce on plateau) en weet wanneer ze te gebruiken
-4.7 - Begrijpt in welke situaties transfer-learning zinvol is
+**StepLR**: De learning rate wordt met een vaste factor verlaagd na een bepaald aantal epochs.
+Wanneer te gebruiken: Dit is een eenvoudige en vaak gebruikte scheduler wanneer je weet dat de leersnelheid periodiek moet worden aangepast, bijvoorbeeld als het model snel convergeert in het begin, maar later trager moet leren. 
+Parameters:
+*step_size*: Het aantal epochs na welke de leersnelheid wordt aangepast.
+*gamma*: De factor waarmee de leersnelheid wordt verminderd.
+ExponentialLR: Goed voor simpele en regelmatige aanpassingen van de learning rate.
+ReduceLROnPlateau: De learning rate wordt aangepast wanneer een specifieke metriek (meestal validatieverlies of nauwkeurigheid) niet meer verbetert na een bepaald aantal epochs (patience). Dit is handig als je niet zeker weet wanneer het model stabiliseert of als het model plateau bereikt in de prestaties. Dit kan bijvoorbeeld worden gebruikt in gevallen waar je te maken hebt met onvoorspelbare convergentie.
+CosineAnnealingLR : Geschikt voor geleidelijke afname van de learning rate en modellen die baat hebben bij deze aanpak (bijvoorbeeld transfer learning).  De learning rate wordt aangepast volgens een cosinusfunctie, wat resulteert in een geleidelijke afname van de leersnelheid van een maximum naar een minimum. Dit kan helpen om de laatste stappen van de training efficiënter te maken, door de leersnelheid langzaam te verlagen naar het einde van de training.
+**Cosine Warmup**: combineert een "warmup"-fase waarbij de leersnelheid langzaam toeneemt (meestal volgens een lineaire of cosinuscurve) gedurende de eerste paar epochs, gevolgd door een periodieke afname van de learning rate (meestal via een cosinusfunctie).
+Wanneer te gebruiken: Cosine warmup is vaak effectief voor taken waarbij een lage initiële leersnelheid gewenst is om "pre-train" stabiliteit te garanderen (bijvoorbeeld bij transfer learning). Het kan ook nuttig zijn voor bepaalde generative modellen zoals GAN's.
+Cyclical Learning Rate (CLR): Geweldig als je wilt experimenteren met verschillende leersnelheden en flexibelere training zoekt.
+OneCycleLR: Aanbevolen voor snelle convergentie en daarna nauwkeurige afstemming van het model.
+4.7 - Begrijpt in welke situaties transfer-learning zinvol is: 
+Transfer learning is bijzonder waardevol in situaties waarin je met beperkte data werkt of wanneer je het model sneller wilt laten convergeren door gebruik te maken van reeds verworven kennis uit een gerelateerde taak
+Transfer learning is bijzonder nuttig wanneer:
+
+- Je beperkte data hebt voor de taak die je wilt oplossen.
+- Je tijd of middelen wilt besparen door een model dat al is getraind op grote hoeveelheden gegevens opnieuw te gebruiken.
+- Je wilt profiteren van reeds geleerde representaties voor een nieuwe, verwante taak.
+- Je met complexe taken werkt die moeilijk vanaf nul te trainen zijn.
 
 De student kan:
 4.8 - de parameters in een pretrained model fixeren zodat het uitgebreid en gefinetuned kan worden
@@ -604,10 +632,66 @@ Het idee is om betekenis niet alleen op basis van de letters of symbolen van een
 Een **semantische vectorruimte** is een krachtige manier om taal te representeren door woorden, zinnen of documenten als vectoren in een hoge-dimensionale ruimte te plaatsen. Deze representaties helpen om **betekenis** en **relaties** tussen taalobjecten vast te leggen, wat nuttig is voor veel toepassingen in natuurlijke taalverwerking (NLP), zoals zoekopdrachten, vertaling, tekstclassificatie en meer. Door de krachtige relaties en semantische contexten die worden vastgelegd, biedt de semantische vectorruimte een geavanceerde manier om taal te begrijpen en te verwerken.
 
 5.4 - Hoe het "reweighing" van word-embeddings werkt met behulp van attention
+"Reweighing" van word-embeddings met behulp van attention is een proces waarbij de representatie van woorden in een tekst wordt aangepast op basis van de context, met behulp van een attention-mechanisme. Dit mechanisme zorgt ervoor dat het model dynamisch kan bepalen welke woorden in de context belangrijker zijn voor de betekenis van een specifiek woord.
+Stappen:
+1. Initialisatie van woord-embeddings: Een woord wordt eerst omgezet in een embedding (meestal een vector in een hoge-dimensionale ruimte) via een vooraf getraind model zoals Word2Vec, GloVe of de woordrepresentaties die in een transformer-gebaseerd model zoals BERT worden geleerd. Deze embeddings bevatten initieel de betekenis van woorden, maar missen vaak context.
+2. Toepassen attention-mechanisme:
+Het attention-mechanisme (bijvoorbeeld in transformer-modellen zoals BERT of GPT) werkt door een gewicht toe te kennen aan elk woord in de context van het doelwoord (het woord waar we onze focus op willen richten). Dit wordt gedaan door twee belangrijke stappen:
+- Query, Key en Value: Elke woordembedding wordt omgezet in drie vectoren: een query (Q), een key (K) en een value (V). Dit gebeurt door de *oorspronkelijke embeddings te vermenigvuldigen met getrainde gewichtsmatrices*.
+
+- Calculatie van attention-gewichten: De aandacht wordt berekend door de vergelijkbaarheid tussen de query van het doelwoord en de keys van de andere woorden in de context te meten, meestal door een dot-product en daarna een softmax-functie toe te passen. Het resultaat is een set van gewichten die aangeven hoeveel invloed elk woord in de context heeft op het doelwoord.
+
+3. Reweighing van de woord-embeddings:
+De oorspronkelijke embeddings van de woorden in de context worden vervolgens gewogen door de berekende aandacht-gewichten. Dit betekent dat de vectoren van de contextwoorden die meer relevant zijn voor de betekenis van het doelwoord een grotere weging krijgen, terwijl woorden die minder relevant zijn een kleinere invloed hebben. Dit stelt het model in staat om de betekenis van een woord dynamisch aan te passen op basis van de omliggende woorden.
+
 5.5 - waarom scaling en masking nodig zijn
+Het **scaling**-proces is belangrijk om te voorkomen dat de waarden van de aandacht te groot of te klein worden, wat kan leiden tot numerieke instabiliteit of inefficiëntie in het leren.
+
+**Masking** is een techniek die wordt gebruikt om ervoor te zorgen dat bepaalde woorden in de input geen invloed hebben op andere woorden in bepaalde gevallen, bijvoorbeeld in sequentiële taken of bij het verwerken van een "future" context.
+De aandacht (Attention) kan wiskundig worden uitgedrukt als:
+
+$$
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) V
+$$
+Hier zorgt $${\sqrt{d_k}} $$ ervoor dat de schaal van de dot-producten niet te groot wordt.
+
+waarbij:
+- \(Q\) de query-matrix is,
+- \(K\) de key-matrix is,
+- \(V\) de value-matrix is,
+- \(d_k\) de dimensie van de key-vectoren is.
+- 
 5.6 - wat multihead attention is
+Multihead Attention is een concept dat wordt gebruikt in moderne transformer-architecturen, zoals die in BERT, GPT, en andere geavanceerde modellen voor natuurlijke taalverwerking en vision-taken. Het is een essentieel onderdeel van de self-attention-mechanisme, en helpt modellen om meerdere representaties van de data tegelijk te verwerken door verschillende aandachtshoofden parallel te laten werken.
+
+**Wat is Attention?**
+Voordat we ingaan op multihead attention, is het handig om te begrijpen wat attention is.
+
+In de context van neural networks verwijst attention naar het mechanisme waarbij het model bepaalt welke delen van de input belangrijker zijn voor een specifieke taak, en focus aanbrengt op die delen. Dit betekent dat het model dynamisch kan beslissen waar het zijn "aandacht" op moet richten binnen de input.
+
+In self-attention (de basis voor transformer-architecturen) krijgt elke positie in de input de kans om informatie van andere posities in de sequentie te verzamelen, afhankelijk van hun relatieve relevantie.
+
+**Wat is Multihead Attention?**
+Multihead Attention breidt dit concept van attention verder uit door meerdere "hoofden" van aandacht parallel te gebruiken. Elk hoofd is in staat om verschillende aandachtspatronen te leren en zo diverse aspecten van de input te begrijpen. In plaats van één enkele aandachtsoverweging, leren meerdere hoofden tegelijkertijd verschillende aspecten van de relatie tussen tokens. Dit zorgt ervoor dat het model in staat is om complexere en veelzijdigere representaties van de input te leren.
+Stel je voor dat je een zin hebt als input. In plaats van één enkele aandachtsscore voor elk paar van woorden in de zin, leert multihead attention verschillende, parallelle sets van aandachtspatronen. Elk hoofd kan zich richten op verschillende aspecten van de zin:
+
+Eén hoofd zou bijvoorbeeld kunnen leren welke woorden grammaticaal belangrijk zijn.
+Een ander hoofd zou zich kunnen concentreren op semantische relaties tussen woorden.
+Een ander hoofd zou mogelijk focussen op afhankelijkheden over lange afstanden (bijvoorbeeld, het verband tussen het onderwerp van een zin en een werkwoord).
+Na het berekenen van deze verschillende aandachtspatronen voor elk hoofd, worden de resultaten samengevoegd om een rijkere en meer veelzijdige representatie van de invoer te krijgen.
+
+
 5.7 - wat positional encoding is, en waarom dat behulpzaam kan zijn
+**Positional Encoding** voegt volgorde-informatie toe aan de tokenrepresentaties in een transformer-model.
+Dit is nodig omdat transformers geen inherent begrip van volgorde hebben (in tegenstelling tot RNN's en LSTM's).
+De meest gebruikte techniek voor positional encoding is de sinus-cosinusfunctie, die het mogelijk maakt om verschillende posities effectief te representeren.
+Positional encoding helpt transformers om de volgorde van tokens in een sequentie te begrijpen, zonder de noodzaak voor recursieve netwerken, en ondersteunt parallelle verwerking van sequentiële data.
+
 5.8 - kan uitleggen hoe attention behulpzaam is bij timeseries in het algemeen, en NLP in het bijzonder.
+In traditionele tijdreeksmodellen zoals RNN's en LSTM's kunnen modellen moeite hebben om lange-afstandsafhankelijkheden vast te leggen. Dit betekent dat als er belangrijke gebeurtenissen zijn die ver in de tijd liggen, de informatie vaak verloren gaat (bijvoorbeeld door verdwijnende gradiënten). Attention kan echter rechtstreeks de relatie tussen tijdstappen leggen, zelfs als ze ver van elkaar verwijderd zijn.In plaats van de volledige reeks gegevens in volgorde te verwerken, kan een attention-mechanisme selectief focussen op de meest relevante tijdstappen.
+In tijdreeksen helpt attention modellen om belangrijke tijdstappen in lange sequenties te identificeren, lange-afstandsafhankelijkheden vast te leggen en efficiënter te werken door parallel verschillende tijdstappen te analyseren.
+
+In NLP stelt attention modellen in staat om relaties tussen woorden of zinnen, zelfs over lange afstanden, vast te leggen, wat essentieel is voor het begrijpen van de betekenis in tekst.
 5.9 - kent het verschil in dimensionaliteit van tensors (2D tensors, 3D tensors, 4D tensors) voor de diverse lagen (Dense, 1D en 2D Convulutionl, MaxPool, RNN/GRU/LSTM, Attention, Activation functions, Flatten) en hoe deze met elkaar te combineren zijn.
 
 Vaardigheden:
@@ -615,3 +699,78 @@ Vaardigheden:
 5.10 - een attention layer toevoegen aan een RNN model
 5.11 - kan een preprocessor voor NLP maken (bv punctuation, lowercase, spaces en xml strippen)
 5.12 - een datapreprocessor aanpassen voor een dataset
+
+# Les 6
+De student begrijpt
+6.1 - hoe de architectuur van een autoencoder in elkaar zit
+Een **autoencoder** is een type neuraal netwerk dat voornamelijk wordt gebruikt voor unsupervised learning, en is ontworpen om inputdata te comprimeren naar een lagere dimensionale representatie (de encoder) en vervolgens deze representatie te reconstrueren naar de originele data (de decoder). Het doel is om de belangrijkste kenmerken van de data te leren, zodat de originele data goed wordt gereconstrueerd, terwijl ruis of minder belangrijke informatie wordt weggelaten.
+De architectuur van een autoencoder bestaat uit drie hoofdcomponenten: de encoder, de bottleneck (de latent space) en de decoder
+6.2 - Wat een latent space is, en hoe je die kunt visualiseren
+**latent space** bevat de gecodeerde informatie van de inputdata in een lagere dimensie. Dit is de kern van wat de autoencoder probeert te leren – een efficiënte representatie van de data.
+Eigenschappen: De bottleneck bevat de belangrijkste kenmerken van de data die het model heeft geleerd, en is meestal veel kleiner in dimensie dan de input zelf.
+Beperkingen: De bottleneck vormt een soort informatiebeperkingen voor het model. Het netwerk moet leren om de belangrijkste informatie in deze kleinere representatie vast te leggen, wat de autoencoder kan helpen bij het ontdekken van interessante patronen in de data.
+Het doel van een autoencoder is om de input zo goed mogelijk te reconstrueren. Daarom wordt het model getraind om de herbouwde output te vergelijken met de originele input en deze fout te minimaliseren.
+Lossfunctie: De meest gebruikelijke loss-functie is de mean squared error (MSE) voor continue waarden (bijvoorbeeld bij afbeeldingen), of binary cross-entropy voor binaire data. Het model wordt getraind om de verschillen tussen de originele data en de gereconstrueerde output te minimaliseren. Dit wordt vaak gedaan door een backpropagation-algoritme, waarbij de gewichten van de encoder en decoder worden aangepast om de fout te verkleinen.
+6.3 - Wat het contrast is tussen autoencoders en Supervised learning op punten als de latent space en de loss functie.
+**Latente ruimte** is de gecomprimeerde representatie van de inputdata die door het encoder-decoder netwerk wordt geleerd.
+Het doel van een autoencoder is om de belangrijkste patronen in de data vast te leggen in een kleinere dimensionale ruimte. Deze latente ruimte is vaak een vector die de kernkenmerken van de inputdata vertegenwoordigt. Autoencoders proberen de input te reconstrueren uit deze gecomprimeerde latente ruimte. De latente ruimte van een autoencoder is niet gebaseerd op enige specifieke labels of doelen. Het is een ongecontroleerde representatie die puur de structurele kenmerken van de data probeert vast te leggen.
+Latente ruimte is ook aanwezig in veel supervised learning-modellen, maar de latente representaties worden geleerd met behulp van labels (doelen). De latente ruimte in supervised learning is ontworpen om de kenmerken van de data te leren die belangrijk zijn voor het voorspellen van de bijbehorende labels. 
+Lossfuncties: voor autoencoders is de lossfunctie het resultaat van het verschil tussen reconstructiefout tussen de oorspronkelijke input en de gereconstrueerde output van het model. Het doel van de autoencoder is om de input te reconstrueren met zo min mogelijk fout. De meest gebruikte lossfunctie is de mean squared error (MSE) voor continue waarden of binary cross-entropy voor binaire data. De lossfunctie meet dus simpelweg hoe goed de output van de decoder de originele input benadert.
+In supervised learning is de lossfunctie afhankelijk van de taak. Voor classificatie kan de lossfunctie bijvoorbeeld categorical cross-entropy zijn, en voor regressie kan dit mean squared error (MSE) zijn. Het belangrijkste verschil is dat de lossfunctie in supervised learning afhankelijk is van de labels van de data. 
+
+| **Kenmerk**                 | **Autoencoders (Unsupervised Learning)**            | **Supervised Learning**                                  |
+|-----------------------------|------------------------------------------------------|----------------------------------------------------------|
+| **Latente ruimte**           | Gecomprimeerde representatie van de data zonder gebruik van labels. Probeert de belangrijkste kenmerken van de inputdata vast te leggen. | Latente representaties worden geleerd om het model te helpen de labels (doelen) correct te voorspellen. Het is label-gedreven. |
+| **lossfunctie**           | Gebaseerd op de reconstructiefout (bijv. MSE, cross-entropy). De input zelf is het doel van de reconstructie. | Gebaseerd op de fout tussen de voorspelling en de werkelijke labels (bijv. MSE voor regressie, cross-entropy voor classificatie). |
+| **Gebruik van labels**       | Geen labels nodig. Het model probeert alleen de inputdata te reconstrueren. | Labels zijn noodzakelijk. Het model leert de relatie tussen input en de bijbehorende labels. |
+
+
+6.4 - Wat praktische toepassingen zijn van autoencoders en hoe de latent space gebruikt kan worden als half-fabrikaat voor andere modellen
+de encoder is goed om bijv. data samen te vatten of te analiseren, voor het bepalen van anomalies of weghalen of toevoegen van noise
+6.5 - Hoe anomaly detection met een autoencoder werkt
+Anomaly detection met een autoencoder is een techniek waarbij het model wordt getraind om "normale" data te leren en vervolgens te beoordelen of nieuwe data afwijkt van wat het model als normaal beschouwt. Het idee is dat de autoencoder leert om de belangrijke patronen in de data te reconstrueren, en wanneer een nieuwe inputafwijking (anomalie) deze patronen niet volgt, zal de reconstructiefout groter zijn.
+1. Train de autoencoder met alleen normale data.
+2. Bereken de reconstructiefout voor nieuwe gegevens.
+3. Vergelijk de reconstructiefout met een drempel:
+4. Kleine fout → normale gegevens.
+5. Grote fout → anomalie.
+Classificeer de anomalieën door de gegevens met grote fouten als afwijkend te markeren.
+6.6 - Hoe unsupervised classification met een autoencoder werkt
+Stel je voor dat je een autoencoder hebt die afbeeldingen van normale objecten leert reconstrueren. Bij het testen met een afbeelding van een onbekend object (bijvoorbeeld een defect object in een fabriek) zal de autoencoder moeite hebben om deze afbeelding goed te reconstrueren. Het verschil tussen de originele afbeelding en de gereconstrueerde afbeelding (de reconstructiefout) zal groter zijn, wat de anomalie aangeeft.
+
+
+6.7 - Wat de elementen van een siamese network zijn
+Een **Siamese netwerk** is een type neuraal netwerk dat wordt gebruikt voor het vergelijken van twee vergelijkbare inputs om te bepalen of ze dezelfde of verschillende klassen vertegenwoordigen. Het wordt voornamelijk gebruikt voor vergelijkingstaken zoals gezichtsherkenning, handtekeningverificatie, schoenmaatmatching, gebruiker-verificatie, en andere gevallen waarbij het doel is om de gelijkenis of verschillen tussen twee invoeren te meten.
+1. Identieke subnetwerken: Twee netwerkcomponenten die dezelfde parameters delen.
+2. Feature extractie: Elke input wordt door zijn eigen netwerk verwerkt om een latente representatie te krijgen.
+3. Samenvoeging van representaties: De representaties van de twee inputs worden gecombineerd om hun gelijkenis te meten.
+4. Afstandsfunctie: De gelijkenis wordt gemeten met een afstandsmaat, zoals Euclidische afstand of cosine-similariteit.
+5. Verliesfunctie: De contrastieve verliesfunctie of triplet loss wordt gebruikt om de afstand tussen gelijke en ongelijke paren te optimaliseren.
+6. Beslissingslaag: Na de berekening van de afstand wordt een beslissingslaag toegevoegd, meestal een sigmoid- of softmax-functie, die de kans bepaalt dat de twee invoeren bij dezelfde klasse horen (bijvoorbeeld de kans dat twee gezichten van dezelfde persoon zijn).
+De uitkomst is een kans of klasse-uitvoer:
+Bij een *sigmoid* functie (resultaat tussen 0-1) wordt het resultaat vaak geïnterpreteerd als de kans of waarschijnlijkheid dat de twee invoeren gelijk zijn (zelfde klasse).
+Bij *softmax* kan het systeem een classificatie uitvoeren, vooral als er meerdere klassen betrokken zijn. 
+
+6.8 - Wanneer je siamese networks zou willen gebruiken
+Toepassingen van Siamese Netwerken:
+Gezichtsherkenning: Vergelijken van twee gezichten om te bepalen of ze dezelfde persoon zijn.
+Signatuurverificatie: Controleren of twee handtekeningen van dezelfde persoon zijn.
+Beeldvergelijking: Vergelijken van twee afbeeldingen om te bepalen of ze hetzelfde object of dezelfde scène bevatten.
+Document Matching: Vergelijken van tekstfragmenten of documenten om te zien of ze semantisch vergelijkbaar zijn.
+6.9 - Hoe je een dataloader moet aanpassen voor een autoencoder 
+De DataLoader voor een autoencoder moet zowel de invoer als de doelen leveren, die meestal identiek zijn (de invoer wordt gereconstrueerd door het model). Je maakt een custom Dataset-klasse die ervoor zorgt dat de invoer gelijk is aan de doeloutput.
+Je kunt de DataLoader gebruiken om batches van gegevens te laden en aan het model te geven.
+Tijdens de training worden de invoer en de doeloutput gebruikt om de reconstructiefout (bijvoorbeeld MSE) te berekenen en de gewichten van het model te optimaliseren.
+6.10 - Wat is de motivatie voor JEPA? Hoe werkt JEPA in vergelijking met autoencoders / genai?
+**JEPA** gaat ervanuit dat het neurale netwerk een hogere niveau van abstractie kan leren door een onderdeel van een foto te maskeren waardoor het gedwongen wordt om de ontbrekende onderdeel te leren. De architectuur is nog steeds een autoencoder. 
+JEPA (Joint Embedding Predictive Architecture) is een relatief nieuwe benadering in de machine learning- en computer vision-domeinen, die is ontworpen om de representaties van de data (in de vorm van embeddings) te verbeteren, met behulp van zelfsupervisie en contrastieve leren. JEPA werd gepresenteerd als een manier om betere en robuustere representaties van data te leren zonder afhankelijk te zijn van zware supervisie of grote hoeveelheden gelabelde data. De motivatie voor JEPA komt voort uit de behoefte om effectievere en meer informatieve representaties te creëren voor downstreamtaken, zoals classificatie, detectie en segmentatie, zonder expliciete labelinformatie.
+
+De student kan
+6.11 - Een autoencoder netwerk ontwerpen en hypertunen
+6.12 - Een encoder of decoder uit een getrainde autoencoder hergebruiken
+
+# Les 7: Graph Neural Networks en Graph Convulutional Networks (GCNs)
+Book: https://www.cs.mcgill.ca/~wlh/grl_book/files/GRL_Book.pdf
+https://www.youtube.com/watch?v=0YLZXjMHA-8
+
+Idea: graph predictions combine the information of nearby nodes into one compact layer. It works just as bij CNN, where an aggregration takes place on node levels instead of pixel level.
